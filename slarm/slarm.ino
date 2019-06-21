@@ -15,30 +15,23 @@ int clock_time_m;
 int clock_time_s;
 int state_1_s;
 int state=0;     //initial value is 0.
-int pinLED=12;    //test LED
 uint32_t last = 0;
 int c;
 int count =0;
 int bt_array[4]={0,0,0,0};
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 SoftwareSerial BTserial(3, 4); // RX | TX
-
 // Connect the HC-05 TX to Arduino pin 3 RX. 
 // Connect the HC-05 RX to Arduino pin 4 TX through a voltage divider.
 
 void setup()
 {
 	Serial.begin(9600);
-	pinMode(pinLED, OUTPUT);
+    BTserial.begin(9600); 
 	lcd.begin();
     lcd.backlight();
 	setSyncProvider(RTC.get);
-	BTserial.begin(9600); 
-	/*if(timeStatus() != timeSet)
-        Serial.println("Unable to sync with the RTC");
-    else
-        Serial.println("RTC has set the system time");
-    */
 	attachInterrupt(digitalPinToInterrupt(2), interrupt_mortor, CHANGE);
     pinMode(stepPin,OUTPUT); 
     pinMode(dirPin,OUTPUT);
@@ -61,9 +54,7 @@ void loop()
 	if (BTserial.available())
     {  
         c = BTserial.read();
-        //Serial.println(c);
         bt_array[count]=c;
-        //Serial.println(bt_array[count]);
         count+=1;
         if (count==4)
         {
@@ -72,10 +63,6 @@ void loop()
         alarm_time_h = (bt_array[0]*10)+(bt_array[1]);
         alarm_time_m = (bt_array[2]*10)+(bt_array[3]);
         alarm_time_s = 0;
-        Serial.print(alarm_time_h);
-        Serial.print(':');
-        Serial.print(alarm_time_m);
-        Serial.println();
         lcd.clear();
         lcd.setCursor(3,0);
         lcd.print("Set alarm!");
@@ -88,22 +75,8 @@ void loop()
 		state_1_s = clock_time_s;
 		lcd.clear();
 	}
-
-	/*if (state==1)
-	{
-		if (clock_time_s == (state_1_s+10))
-		{
-			state=2;
-		}
-	}*/
-	/*if (alarm_time==clock_time)
-	{
-		state=1;
-	}
-	*/
 	mp3_ring();
 	mortor();
-	//Serial.println(state);
 }
 
 void mortor()
@@ -114,12 +87,9 @@ void mortor()
         delayMicroseconds(stepDelay);
         digitalWrite(stepPin, LOW);
         delayMicroseconds(stepDelay);
-        lcd.setCursor(13,1);
-        lcd.print('3');
 	}
-    
-    
 }
+
 void mp3_ring()
 {
 	if (state==1)
@@ -136,12 +106,10 @@ void interrupt_mortor()
 	state=0;
 }
 
-
-/*########################################################################################*/
+/*########################FOR LCD DISPLAY###########################*/
 void digitalClockDisplay()
 {
     // digital clock display of the time
-    //serial_print();
     if (state==0)
     {
 		print_time_on_LCD();
@@ -153,21 +121,6 @@ void digitalClockDisplay()
         lcd.setCursor(5,1);
         lcd.print(state);
     }
-    //print_time_on_LCD();
-    /*if(second()!=0)
-    {
-        print_time_on_LCD();
-        lcd.setCursor(10,1);
-        lcd.print(get_second());
-        
-    }
-    if(second()==0)
-    {
-        lcd.clear();
-        print_time_on_LCD();
-        lcd.setCursor(10,1);
-        lcd.print(get_second());
-    }*/
 }
 
 void serial_print(void)
